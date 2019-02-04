@@ -1,4 +1,9 @@
 def scanHorizontal(image, rTool):
+	"""
+	:param image: image to apply the scan
+	:param rTool: tool radius
+	:return: adds 2's where there should be a path for the tool, looking at the image only horizontally
+	"""
 
 	width = len(image[0])
 	height = len(image)
@@ -6,12 +11,12 @@ def scanHorizontal(image, rTool):
 	for line in range(height):
 		for column in range(width):
 
-			if image[line][column] == 1 and image[line][ column - 1] == 0:
+			if image[line][column] == 1 and image[line][column - 1] == 0:
 				for px in range(2 * rTool):
 					if image[line - rTool + px][column - rTool] == 0:
 						image[line - rTool + px][column - rTool] = 2
 
-			if image[line][column] == 1 and image[line][ column + 1] == 0:
+			if image[line][column] == 1 and image[line][column + 1] == 0:
 				for px in range(2 * rTool):
 					if image[line - rTool + px][column + rTool] == 0:
 						image[line - rTool + px][column + rTool] = 2
@@ -20,6 +25,11 @@ def scanHorizontal(image, rTool):
 
 
 def scanVertical(image, rTool):
+	"""
+	:param image: image to apply the scan
+	:param rTool: tool radius
+	:return: adds 2's where there should be a path for the tool, looking at the image only vertically
+	"""
 
 	width = len(image[0])
 	height = len(image)
@@ -27,7 +37,7 @@ def scanVertical(image, rTool):
 	for line in range(height):
 		for column in range(width):
 
-			if image[line][column] == 1 and image[line - 1][ column] == 0:
+			if image[line][column] == 1 and image[line - 1][column] == 0:
 				for px in range(2 * rTool):
 					if image[line - rTool][column - rTool + px] == 0:
 						image[line - rTool][column - rTool + px] = 2
@@ -40,6 +50,11 @@ def scanVertical(image, rTool):
 	return image
 
 def twoRemoving(image, rTool):
+	"""
+	:param image: image to apply the scan
+	:param rTool: tool radius
+	:return: removes unnecessary twos to leave a path of only one pixel large
+	"""
 
 	rTool -= 1
 	width = len(image[0])
@@ -50,10 +65,17 @@ def twoRemoving(image, rTool):
 
 			if image[line][column] == 1:
 				for px in range(2 * rTool + 1):
-					if image[line - rTool + px][column] == 2:
-						image[line - rTool + px][column] = 0
-					if image[line][column - rTool + px] == 2:
-						image[line][column - rTool + px] = 0
+					for pixel in range(2*rTool + 1):
+						if image[line - rTool + px][column - rTool + pixel] == 2:
+							image[line - rTool + px][column - rTool + pixel] = 0
+
+	print("image width = " + str(width))
+	print("image height = " + str(height))
 
 	return image
+
+
+def path(image, rTool):
+	return twoRemoving(scanVertical(scanHorizontal(image, rTool), rTool), rTool)
+
 
