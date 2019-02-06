@@ -2,4 +2,6 @@ from unittest import TestCase
 
 
 class TestFormatPbm(TestCase):
-	pass
+	
+	def test_formatPbm(self):
+		assert True
