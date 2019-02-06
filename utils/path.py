@@ -11,13 +11,13 @@ def scanHorizontal(image, rTool):
 	for line in range(height):
 		for column in range(width):
 
-			if image[line][column] == 1 and image[line][column - 1] == 0:
-				for px in range(2 * rTool):
+			if image[line][column] == 1 and image[line][column - 1] != 1:
+				for px in range(2 * rTool + 1):
 					if image[line - rTool + px][column - rTool] == 0:
 						image[line - rTool + px][column - rTool] = 2
 
-			if image[line][column] == 1 and image[line][column + 1] == 0:
-				for px in range(2 * rTool):
+			if image[line][column] == 1 and image[line][column + 1] != 1:
+				for px in range(2 * rTool + 1):
 					if image[line - rTool + px][column + rTool] == 0:
 						image[line - rTool + px][column + rTool] = 2
 
@@ -37,13 +37,13 @@ def scanVertical(image, rTool):
 	for line in range(height):
 		for column in range(width):
 
-			if image[line][column] == 1 and image[line - 1][column] == 0:
-				for px in range(2 * rTool):
+			if image[line][column] == 1 and image[line - 1][column] != 1:
+				for px in range(2 * rTool + 1):
 					if image[line - rTool][column - rTool + px] == 0:
 						image[line - rTool][column - rTool + px] = 2
 
-			elif image[line][column] == 1 and image[line + 1][column] == 0:
-				for px in range(2 * rTool):
+			if image[line][column] == 1 and image[line + 1][column] != 1:
+				for px in range(2 * rTool + 1):
 					if image[line + rTool][column - rTool + px] == 0:
 						image[line + rTool][column - rTool + px] = 2
 
@@ -56,7 +56,6 @@ def twoRemoving(image, rTool):
 	:return: removes unnecessary twos to leave a path of only one pixel large
 	"""
 
-	rTool -= 1
 	width = len(image[0])
 	height = len(image)
 
@@ -64,8 +63,8 @@ def twoRemoving(image, rTool):
 		for column in range(width):
 
 			if image[line][column] == 1:
-				for px in range(2 * rTool + 1):
-					for pixel in range(2*rTool + 1):
+				for px in range(1, 2 * rTool):
+					for pixel in range(1, 2*rTool):
 						if image[line - rTool + px][column - rTool + pixel] == 2:
 							image[line - rTool + px][column - rTool + pixel] = 0
 
