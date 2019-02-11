@@ -63,10 +63,10 @@ def twoRemoving(image, rTool):
 		for column in range(width):
 
 			if image[line][column] == 1:
-				for px in range(1, 2 * rTool):
-					for pixel in range(1, 2*rTool):
-						if image[line - rTool + px][column - rTool + pixel] == 2:
-							image[line - rTool + px][column - rTool + pixel] = 0
+				for pixelx in range(1, 2 * rTool):
+					for pixely in range(1, 2*rTool):
+						if image[line - rTool + pixelx][column - rTool + pixely] == 2:
+							image[line - rTool + pixelx][column - rTool + pixely] = 0
 
 	print("image width = " + str(width))
 	print("image height = " + str(height))
