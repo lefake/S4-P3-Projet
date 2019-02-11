@@ -1,6 +1,18 @@
+from pcbdevice.utils.path import path
 from pcbdevice.utils.pbmformator import formatPbm
+from pcbdevice.utils.plotimg import plotPath
 from pcbdevice.utils.savetofile import matrixToFile
 
 if __name__ == "__main__":
 	# Usage example
-	matrixToFile(formatPbm('resources/original/test1ascii.pbm'), 'resources/reformatted/test1.csv')
+
+	resourcesRawPath = 'tests/resources/raw/'
+	resourcesFormattedPath = 'tests/resources/formatted/'
+	resourcesPathOutput = 'resources/pathoutput/'
+
+	matrixToFile(formatPbm(resourcesRawPath + 'test1ascii.pbm'), resourcesFormattedPath + 'test1.csv')
+
+	plotPath(path(formatPbm(resourcesRawPath + 'test100x100.pbm'), 5))
+
+
+
