@@ -11,4 +11,4 @@ if __name__ == "__main__":
 
 	FileUtils.saveMatrixToFile(FileUtils.pbmToCsv(resourcesRawPath + 'test1ascii.pbm'), resourcesFormattedPath + 'test1.csv')
 
-	plotPath(path(FileUtils.pbmToCsv((resourcesRawPath + 'test100x100.pbm'), 5)))
+	plotPath(path(FileUtils.pbmToCsv(resourcesRawPath + 'test100x100.pbm'), 5))
