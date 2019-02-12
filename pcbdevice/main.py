@@ -1,7 +1,6 @@
 from pcbdevice.utils.path import path
-from pcbdevice.utils.pbmformator import formatPbm
 from pcbdevice.utils.plotimg import plotPath
-from pcbdevice.utils.savetofile import matrixToFile
+from pcbdevice.utils.FileUtils import FileUtils
 
 if __name__ == "__main__":
 	# Usage example
@@ -10,9 +9,6 @@ if __name__ == "__main__":
 	resourcesFormattedPath = 'tests/resources/formatted/'
 	resourcesPathOutput = 'resources/pathoutput/'
 
-	matrixToFile(formatPbm(resourcesRawPath + 'test1ascii.pbm'), resourcesFormattedPath + 'test1.csv')
+	FileUtils.saveMatrixToFile(FileUtils.pbmToCsv(resourcesRawPath + 'test1ascii.pbm'), resourcesFormattedPath + 'test1.csv')
 
-	plotPath(path(formatPbm(resourcesRawPath + 'test100x100.pbm'), 5))
-
-
-
+	plotPath(path(FileUtils.pbmToCsv((resourcesRawPath + 'test100x100.pbm'), 5)))
