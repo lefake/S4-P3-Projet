@@ -16,7 +16,7 @@ class FileUtils:
 		
 		matrix = [[0 for i in range(width)] for j in range(height)]
 		for index, value in enumerate(completeFile):
-			matrix[math.floor(index / width)][index % width] = value
+			matrix[int(math.floor(index / width))][index % width] = value
 		
 		return matrix
 	
