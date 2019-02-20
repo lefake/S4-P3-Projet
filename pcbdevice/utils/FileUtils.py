@@ -30,6 +30,13 @@ class FileUtils:
 			f.close()
 			
 	@staticmethod
+	def saveStringListToFile(stringList, filePath):
+		with open(filePath, 'w') as f:
+			for line in stringList:
+				f.write('%s\n' % line)
+			f.close()
+			
+	@staticmethod
 	def getPixelSize(matHeight, matWidth, pcbHeight, pcbWidth, unit = 'mm'):
 		if unit == 'mm':
 			return pcbHeight / matHeight, pcbWidth / matWidth

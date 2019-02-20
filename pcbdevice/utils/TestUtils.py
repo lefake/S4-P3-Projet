@@ -12,3 +12,10 @@ def readIntFile(filePath):
 		completeFile.append(tempArray)
 	
 	return completeFile
+
+def readStringFile(filePath):
+	file = open(filePath, 'r')
+	lines = file.readlines()
+	file.close()
+	
+	return lines
