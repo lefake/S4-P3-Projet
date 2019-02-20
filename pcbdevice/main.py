@@ -17,11 +17,7 @@ if __name__ == "__main__":
 		pxHeight, pxWidth = FileUtils.getPixelSize(height, width, args.he, args.wi, unit = args.u)
 	else:
 		pxHeight, pxWidth = FileUtils.getPixelSize(height, width, args.he, args.wi)
-	
-	
-	print(pxHeight, pxWidth)
-	
-	# Usage example
+
 
 	resourcesRawPath = 'tests/resources/raw/'
 	resourcesFormattedPath = 'tests/resources/formatted/'
