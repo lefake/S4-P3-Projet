@@ -2,10 +2,10 @@ import math
 
 class FileUtils:
 	@staticmethod
-	def pbmToCsv(pbmFile, dimensionLineIndex = 2):
+	def pbmToMatrix(pbmFilePath, dimensionLineIndex = 2):
 		completeFile = []
 		
-		file = open(pbmFile, 'r')
+		file = open(pbmFilePath, 'r')
 		lines = file.readlines()
 		width, height = (int(val) for val in lines[dimensionLineIndex].split())
 		file.close()
@@ -18,7 +18,7 @@ class FileUtils:
 		for index, value in enumerate(completeFile):
 			matrix[int(math.floor(index / width))][index % width] = value
 		
-		return matrix
+		return matrix, height, width
 	
 	@staticmethod
 	def saveMatrixToFile(matrix, filePath):
@@ -28,3 +28,16 @@ class FileUtils:
 					f.write('%s ' % y )
 				f.write('\n')
 			f.close()
+			
+	@staticmethod
+	def getPixelSize(matHeight, matWidth, pcbHeight, pcbWidth, unit = 'mm'):
+		if unit == 'mm':
+			return pcbHeight / matHeight, pcbWidth / matWidth
+		elif unit == 'cm':
+			return pcbHeight / matHeight * 10, pcbWidth / matWidth * 10
+		elif unit == 'm':
+			return pcbHeight / matHeight * 100, pcbWidth / matWidth * 100
+		elif unit == 'in':
+			return pcbHeight / matHeight * 25.4, pcbWidth / matWidth * 25.4
+		else:
+			raise RuntimeError('Unit not handle')
