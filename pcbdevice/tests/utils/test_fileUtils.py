@@ -42,3 +42,4 @@ class TestFileUtils(TestCase):
 		self.assertEqual((10, 10), FileUtils.getPixelSize(10, 10, 1, 1, unit = 'm'))
 		self.assertEqual((25.4, 25.4), FileUtils.getPixelSize(10, 10, 10, 10, unit = 'in'))
 		self.assertEqual((1, 2), FileUtils.getPixelSize(10, 10, 10, 20))
+		self.assertRaises(RuntimeError, lambda: FileUtils.getPixelSize(10, 10, 10, 10, 'ft'))

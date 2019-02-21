@@ -14,7 +14,7 @@ def listToGCode(listIndex, pHeight, pWidth):
 			gcodeCommand.append('G0 Z0')
 			toolUp = True
 		else:
-			gcodeCommand.append('G0 X' + str(coord.getX()*pWidth) + ' Y' + str(coord.getY()*pHeight))
+			gcodeCommand.append('G0 X' + str(round(coord.getX()*pWidth, 2)) + ' Y' + str(round(coord.getY()*pHeight, 2)))
 			if toolUp:
 				gcodeCommand.append('G0 Z3')
 				toolUp = False
