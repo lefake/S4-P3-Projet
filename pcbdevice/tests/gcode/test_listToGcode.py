@@ -34,27 +34,27 @@ class TestListToGCode(TestCase):
 	        Coordinate(1, 10)]
 	
 	def test_listToGCodeMultipleTrace(self):
-		xSize, ySize = 2, 3
+		xSize, ySize = 2.0, 3.0
 		
 		self.assertEqual(listToGCode(self.oneTrace, ySize, xSize), getExpected(self.oneTrace, ySize, xSize))
 		self.assertEqual(listToGCode(self.twoTrace, ySize, xSize), getExpected(self.twoTrace, ySize, xSize))
 		self.assertEqual(listToGCode(self.threeTrace, ySize, xSize), getExpected(self.threeTrace, ySize, xSize))
 	
 	def test_listToGCodePixelSize(self):
-		xSize, ySize = 1, 4
+		xSize, ySize = 1.0, 4.0
 		self.assertEqual(listToGCode(self.oneTrace, ySize, xSize), getExpected(self.oneTrace, ySize, xSize))
 		
-		xSize, ySize = 4, 2
+		xSize, ySize = 4.0, 2.0
 		self.assertEqual(listToGCode(self.oneTrace, ySize, xSize), getExpected(self.oneTrace, ySize, xSize))
 		
-		xSize, ySize = 8, -1
+		xSize, ySize = 8.0, -1.0
 		self.assertRaises(RuntimeError, lambda: listToGCode(self.oneTrace, ySize, xSize))
 
 def getExpected(coords, ySize, xSize):
 	header = ['G28', 'G90\n']
 	footer = ['\nG0 Z0', 'G28']
 	
-	content = ['G0 X' + str(xSize * coords[0].getX()) + ' Y' + str(ySize * coords[0].getY()),
+	content = ['G0 X' + str(round(xSize * coords[0].getX(), 2)) + ' Y' + str(round(ySize * coords[0].getY(), 2)),
 	           'G0 Z3',
 	           ]
 	
