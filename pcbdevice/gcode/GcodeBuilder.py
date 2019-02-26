@@ -1,4 +1,12 @@
 def listToGCode(listIndex, pHeight, pWidth):
+	"""
+	Convert a list of matrix coordinate in a list of GCode commands
+	
+	:param listIndex: List of coordinate
+	:param pHeight: Pixel height in mm
+	:param pWidth: Pixel width in mm
+	:return: List of all the GCode commands
+	"""
 	gcodeCommand = []
 	toolUp = True
 	
