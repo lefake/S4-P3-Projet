@@ -24,7 +24,11 @@ if __name__ == "__main__":
 	else:
 		pxHeight, pxWidth = FileUtils.getPixelSize(height, width, args.he, args.wi)
 	
-	rTool = int(math.ceil(args.t * pxHeight if pxHeight > pxWidth else pxWidth))
+	if pxHeight > pxWidth:
+		rTool = int(math.ceil(args.t * pxHeight))
+	else:
+		rTool = int(math.ceil(args.t * pxWidth))
+	
 	matrixUpdated = path(matrix, rTool)
 	listIndexes = createSequence(matrixUpdated)
 	gcode = listToGCode(listIndexes, pxHeight, pxWidth)
