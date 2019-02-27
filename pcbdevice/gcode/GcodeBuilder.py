@@ -1,4 +1,12 @@
 def listToGCode(listIndex, pHeight, pWidth):
+	"""
+	Convert a list of matrix coordinate in a list of GCode commands
+	
+	:param listIndex: List of coordinate
+	:param pHeight: Pixel height in mm
+	:param pWidth: Pixel width in mm
+	:return: List of all the GCode commands
+	"""
 	gcodeCommand = []
 	toolUp = True
 	
@@ -14,7 +22,7 @@ def listToGCode(listIndex, pHeight, pWidth):
 			gcodeCommand.append('G0 Z0')
 			toolUp = True
 		else:
-			gcodeCommand.append('G0 X' + str(coord.getX()*pWidth) + ' Y' + str(coord.getY()*pHeight))
+			gcodeCommand.append('G0 X' + str(round(coord.getX()*pWidth, 2)) + ' Y' + str(round(coord.getY()*pHeight, 2)))
 			if toolUp:
 				gcodeCommand.append('G0 Z3')
 				toolUp = False
