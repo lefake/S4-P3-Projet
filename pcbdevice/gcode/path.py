@@ -11,15 +11,19 @@ def scanHorizontal(image, rTool):
 	for line in range(height):
 		for column in range(width):
 
-			if image[line][column] == 1 and image[line][column - 1] != 1:
-				for px in range(2 * rTool + 1):
-					if image[line - rTool + px][column - rTool] == 0:
-						image[line - rTool + px][column - rTool] = 2
+			if column > 0:
+				if image[line][column] == 1 and image[line][column - 1] != 1:
+					for px in range(2 * rTool + 1):
+						if column - rTool >= 0 and 0 <= line - rTool + px < height:
+							if image[line - rTool + px][column - rTool] == 0:
+								image[line - rTool + px][column - rTool] = 2
 
-			if image[line][column] == 1 and image[line][column + 1] != 1:
-				for px in range(2 * rTool + 1):
-					if image[line - rTool + px][column + rTool] == 0:
-						image[line - rTool + px][column + rTool] = 2
+			if column < width - 1:
+				if image[line][column] == 1 and image[line][column + 1] != 1:
+					for px in range(2 * rTool + 1):
+						if column + rTool < width and 0 <= line - rTool + px < height:
+							if image[line - rTool + px][column + rTool] == 0:
+								image[line - rTool + px][column + rTool] = 2
 
 	return image
 
@@ -37,15 +41,19 @@ def scanVertical(image, rTool):
 	for line in range(height):
 		for column in range(width):
 
-			if image[line][column] == 1 and image[line - 1][column] != 1:
-				for px in range(2 * rTool + 1):
-					if image[line - rTool][column - rTool + px] == 0:
-						image[line - rTool][column - rTool + px] = 2
+			if line > 0:
+				if image[line][column] == 1 and image[line - 1][column] != 1:
+					for px in range(2 * rTool + 1):
+						if line - rTool >= 0 and 0 <= column - rTool + px < width:
+							if image[line - rTool][column - rTool + px] == 0:
+								image[line - rTool][column - rTool + px] = 2
 
-			if image[line][column] == 1 and image[line + 1][column] != 1:
-				for px in range(2 * rTool + 1):
-					if image[line + rTool][column - rTool + px] == 0:
-						image[line + rTool][column - rTool + px] = 2
+			if line < height - 1:
+				if image[line][column] == 1 and image[line + 1][column] != 1:
+					for px in range(2 * rTool + 1):
+						if line + rTool < height and 0 <= column - rTool + px < width:
+							if image[line + rTool][column - rTool + px] == 0:
+								image[line + rTool][column - rTool + px] = 2
 
 	return image
 
@@ -65,8 +73,9 @@ def twoRemoving(image, rTool):
 			if image[line][column] == 1:
 				for pixelx in range(1, 2 * rTool):
 					for pixely in range(1, 2*rTool):
-						if image[line - rTool + pixelx][column - rTool + pixely] == 2:
-							image[line - rTool + pixelx][column - rTool + pixely] = 0
+						if 0 <= line - rTool + pixelx < height and 0 <= column - rTool + pixely < width:
+							if image[line - rTool + pixelx][column - rTool + pixely] == 2:
+								image[line - rTool + pixelx][column - rTool + pixely] = 0
 
 	print("image width = " + str(width))
 	print("image height = " + str(height))
