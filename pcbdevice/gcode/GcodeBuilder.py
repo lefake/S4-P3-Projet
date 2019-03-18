@@ -30,5 +30,6 @@ def listToGCode(listIndex, pHeight, pWidth):
 	# FOOTER
 	gcodeCommand.append('\nG0 Z0')
 	gcodeCommand.append('G28')
+	gcodeCommand.append('M18')
 	
 	return gcodeCommand

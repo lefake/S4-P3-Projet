@@ -52,7 +52,7 @@ class TestListToGCode(TestCase):
 
 def getExpected(coords, ySize, xSize):
 	header = ['G28', 'G90\n']
-	footer = ['\nG0 Z0', 'G28']
+	footer = ['\nG0 Z0', 'G28', 'M18']
 	
 	content = ['G0 X' + str(round(xSize * coords[0].getX(), 2)) + ' Y' + str(round(ySize * coords[0].getY(), 2)),
 	           'G0 Z3',
