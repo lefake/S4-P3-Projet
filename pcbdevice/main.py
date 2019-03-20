@@ -8,7 +8,9 @@ from pcbdevice.utils.FileUtils import FileUtils
 import argparse
 import subprocess
 
-def main(inputPath, outputPath, converterPath, isAscii, heightReal, widthReal, tool, unit):
+def main(inputPath, outputPath, isAscii, heightReal, widthReal, tool, unit):
+	converterPath = '.\\pcbdevice\\utils\\convertiseur.exe'
+	
 	if outputPath.rfind('\\') != -1:
 		asciiPbmPath = outputPath[0:outputPath.rfind('\\')] + '\\pcbImageAscii.pbm'
 	elif outputPath.rfind('/') != -1:
@@ -44,8 +46,6 @@ if __name__ == "__main__":
 	parser.add_argument('-u', required = False, help = 'PCB dimension unit')
 	args = parser.parse_args()
 	
-	converter = '.\\pcbdevice\\utils\\convertiseur.exe'
-	
 	unitValue = 'mm'
 	isAscii = args.imgTypeisAscii
 	
@@ -55,4 +55,4 @@ if __name__ == "__main__":
 	if isAscii:
 		asciiPbmPath = args.i
 	
-	main(args.i, args.o, converter, isAscii, args.wi, args.he, args.t, unitValue)
+	main(args.i, args.o, isAscii, args.wi, args.he, args.t, unitValue)
