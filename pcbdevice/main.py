@@ -8,6 +8,31 @@ from pcbdevice.utils.FileUtils import FileUtils
 import argparse
 import subprocess
 
+def main(inputPath, outputPath, converterPath, isAscii, heightReal, widthReal, tool, unit):
+	if outputPath.rfind('\\') != -1:
+		asciiPbmPath = outputPath[0:outputPath.rfind('\\')] + '\\pcbImageAscii.pbm'
+	elif outputPath.rfind('/') != -1:
+		asciiPbmPath = outputPath[0:outputPath.rfind('/')] + '/pcbImageAscii.pbm'
+	else:
+		asciiPbmPath = '.\\pcbdevice\\resources\\output\\pcbImageAscii.pbm'
+		
+	if not isAscii:
+		subprocess.check_call([converterPath, inputPath, asciiPbmPath])
+	
+	matrix, height, width = FileUtils.pbmToMatrix(asciiPbmPath)
+	
+	pxHeight, pxWidth = FileUtils.getPixelSize(height, width, heightReal, widthReal, unit = unit)
+	
+	if pxHeight > pxWidth:
+		rTool = int(math.ceil(tool * pxHeight))
+	else:
+		rTool = int(math.ceil(tool * pxWidth))
+	
+	matrixUpdated = path(matrix, rTool)
+	listIndexes = createSequence(matrixUpdated)
+	gcode = listToGCode(listIndexes, pxHeight, pxWidth)
+	FileUtils.saveStringListToFile(gcode, outputPath)
+
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(prog = 'main.py')
 	parser.add_argument('-i', required = True, help = 'PCB image path')
@@ -19,31 +44,15 @@ if __name__ == "__main__":
 	parser.add_argument('-u', required = False, help = 'PCB dimension unit')
 	args = parser.parse_args()
 	
-	converterPath = '.\\pcbdevice\\utils\\convertiseur.exe'
-	asciiPbmPath = '.\\pcbdevice\\resources\\output\\pcbImageAscii.pbm'
+	converter = '.\\pcbdevice\\utils\\convertiseur.exe'
 	
 	unitValue = 'mm'
 	isAscii = args.imgTypeisAscii
 	
-	if isAscii:
-		asciiPbmPath = args.i
-		
-	if not isAscii:
-		subprocess.check_call([converterPath, args.i, asciiPbmPath])
-
-	matrix, height, width = FileUtils.pbmToMatrix(asciiPbmPath)
-	
 	if args.u:
 		unitValue = args.u
 		
-	pxHeight, pxWidth = FileUtils.getPixelSize(height, width, args.he, args.wi, unit = unitValue)
+	if isAscii:
+		asciiPbmPath = args.i
 	
-	if pxHeight > pxWidth:
-		rTool = int(math.ceil(args.t * pxHeight))
-	else:
-		rTool = int(math.ceil(args.t * pxWidth))
-	
-	matrixUpdated = path(matrix, rTool)
-	listIndexes = createSequence(matrixUpdated)
-	gcode = listToGCode(listIndexes, pxHeight, pxWidth)
-	FileUtils.saveStringListToFile(gcode, args.o)
+	main(args.i, args.o, converter, isAscii, args.wi, args.he, args.t, unitValue)
