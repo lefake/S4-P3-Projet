@@ -42,10 +42,6 @@ List of function creation :
 
 #include <DynamixelWorkbench.h>
 
-// Gcode requests :
-const int G0 = 1;
-const int G90 = 2;
-
 #if defined(__OPENCM904__)
   #define DEVICE_NAME "3" //Dynamixel on Serial3(USART3)  <-OpenCM 485EXP
 #elif defined(__OPENCR__)
@@ -61,6 +57,7 @@ uint8_t scan_cnt = 0;
 uint8_t ping_cnt = 0;
 
 const char *NULL_POINTER = NULL;
+bool HOMING = 0;
 
 // Motors Propertys :
 uint8_t idX = 11;
@@ -72,6 +69,22 @@ int XPosition = 0;
 int yPosition = 0;
 int ZPosition = 0;
 
+// Limit Switch propertys
+int XSwitchPin = 8;
+int YSwitchPin = 9;
+int ZSwitchPin = 10;
+int EmergencySwitchPin = 2;
+
+// Homing variables
+bool homing = 0;
+bool homingX = 0;
+bool homingY = 0;
+bool homingZ = 0;
+
+int offsetX = 10; //mm
+int offsetY = 10; //mm
+int offsetZ = 10; //mm
+
 // Fonctions prototypes : 
 void Begin(uint32_t baud);
 void Ping(int identification);
@@ -82,15 +95,28 @@ void Torque_on(uint8_t id);
 void Torque_off(uint8_t id);
 void Write(uint8_t id, uint32_t value, String commande);
 int32_t Read(uint8_t id, String commande);
+void Led(uint8_t ID, bool state);
+void EmergencyStop();
+void HomeAxe(String axe, uint8_t ID, int offset);
+void LimiteSwitch(uint8_t IDX, uint8_t IDY, uint8_t IDZ, bool homing);
 
 int MovingDistance(String axe, float value_mm, uint8_t IDX, uint8_t IDY, uint8_t IDZ);
+Homing(uint8_t IDX, uint8_t IDY, uint8_t IDZ);
 
+// Initialisation :
 void setup() 
 {
+
+  // Initialisation des pins :
+  pinMode(XSwitchPin, INPUT_PULLUP);
+  pinMode(YSwitchPin, INPUT_PULLUP);
+  pinMode(ZSwitchPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(EmergencySwitchPin), LimiteSwitch, RISING);
+  
   Serial.begin(57600);
   while(!Serial); // Open a Serial Monitor  
 
-//Motor Section :
+//Motor Initialisation Section :
   Begin((uint32_t)57600);
   Ping(idX);
   Ping(idY);
@@ -110,10 +136,10 @@ void setup()
   Torque_on(idX);
   Torque_on(idY);
   Torque_on(idZ);
-  Serial.println("Ready");
+  //Serial.println("Ready");
 }
 
-
+// Main Program
 void loop() {
 
 if (Serial.available())
@@ -121,7 +147,6 @@ if (Serial.available())
     String read_string = Serial.readStringUntil('\n');
     //Serial.println("[CMD] : " + String(read_string));
 
-    //String read_string = "G0 X10.2 Y4.4";
     String words[] = {"", "", ""};
   
     int start = 0;
@@ -138,20 +163,62 @@ if (Serial.available())
     }
     words[wordIndex] = read_string.substring(start, read_string.length());
 
-  
+    // Absolute Move G0
+    // Call exemple : G0 X100 Y200 Z10
     if(words[0] == "G0")
     {
-      for(int i = 1; i < 3; i++)
+      Serial.println("2");
+      for(int i = 1; i < wordIndex+1; i++)
       {
         float value = words[i].substring(1, words[i].length()).toFloat(); 
         statut[i] = MovingDistance((String)words[i].charAt(0), value, idX, idY, idZ);
       }
-      if(statut[1]+statut[2]+statut[3] >= 3){
+      if((statut[0] == 1 || statut[0] == 0) && (statut[1] == 1 || statut[1] == 0) && (statut[2] == 1|| statut[2] == 0)){
         Serial.println("1");
       }
       else{
         Serial.println("-1");
       }
+    }
+
+    // Homing G28 (home all axes)
+    // Call exemple : G28
+    else if(words[0] == "G28"){
+      Serial.println("2");
+      Homing(idX, idY, idZ);
+      Serial.println("1");
+    }
+
+    // Torque OFF all M18
+    // Call exemple : M18
+    else if(words[0] == "M18"){
+      Serial.println("2");
+      EmergencyStop();
+      Serial.println("1");
+    }
+    
+    // Emergency state M112
+    // Call exemple : M112
+    else if(words[0] == "M112"){
+      Serial.println("2");
+      EmergencyStop();
+
+      for(int i=0; i<10; i++){
+        Led(idX, 1);
+        Led(idY, 1);
+        Led(idZ, 1);
+        delay(200);
+        Led(idX, 0);
+        Led(idY, 0);
+        Led(idZ, 0);
+        delay(200);
+      }
+      Serial.println("1");
+    }
+
+    // Request not recognized
+    else{
+      Serial.println("-1");
     }
   }
 }
@@ -172,6 +239,31 @@ if (Serial.available())
 // High level Functions :
 //########################
 
+int Homing(uint8_t IDX, uint8_t IDY, uint8_t IDZ){
+  homing = 1;
+  // home Z :
+  homingZ = HIGH;
+  homingY = LOW;
+  homingX = LOW;
+  Torque_on(IDZ);
+  Wheel(IDZ, -50);
+  
+  // home y :
+  homingZ = LOW;
+  homingY = HIGH;
+  homingX = LOW;
+  Torque_on(IDY);
+  Wheel(IDZ, -100);
+  
+  // home x :
+  homingZ = LOW;
+  homingY = LOW;
+  homingX = HIGH;
+  Torque_on(IDX);
+  Wheel(IDZ, -100);
+  
+}
+
 int MovingDistance(String axe, float value_mm, uint8_t IDX, uint8_t IDY, uint8_t IDZ){
 
   // Physicals propertys:
@@ -185,43 +277,65 @@ int MovingDistance(String axe, float value_mm, uint8_t IDX, uint8_t IDY, uint8_t
   int32_t value = (value_mm/resMotorLinear);
 
   if(axe == "X"){
-    MovingTick(IDX, value);
-    //Serial.println("X");
-    return 1;
+    return MovingTick(IDX, value);
   }
-  else{
-    if(axe == "Y"){
-      MovingTick(IDY, (int32_t)value);
-      //Serial.println("Y");
-      return 1;
-    }
-    else{
-      if(axe == "Z"){
-        MovingTick(IDZ, (int32_t)value);
-        //Serial.println("Z");
-        return 1;
-      }
-    }
+  else if(axe == "Y"){
+    return MovingTick(IDY, value);
+  }
+  else if(axe == "Z"){
+    return MovingTick(IDZ, value);
   }
 }
 
 int MovingTick(uint8_t id, int32_t value){
   String commande = "Goal_Position";
-  int32_t CurrentPosition = 0;
+  int32_t CurrentPosition = Read(id, "Present_Position");
   int MaxTick = 1048575;
-  int Iter = 0;
+  int MinTick = 0;
+
+  bool Front_Back = 0;
   
-  Torque_on(id);
-  Write(id, value, commande);
-  
-  while(CurrentPosition < value-1){
-    CurrentPosition = Read(id, "Present_Position");
-    Iter += 1;
-    if(Iter >= MaxTick){
-      return -1;
+  if(value > Read(id, "Present_Position")){
+    Front_Back = 1;
+  }
+  else if(value < Read(id, "Present_Position")){
+    Front_Back = 0;
+  }
+
+  if((Front_Back && (CurrentPosition < MaxTick)) || (!Front_Back && (CurrentPosition > MinTick)))
+  {
+    Torque_on(id);
+    Write(id, value, commande); 
+  }
+  else
+  {
+    Torque_off(id); 
+    Serial.println(CurrentPosition);
+    return -1;
+  }
+
+  // Moving to front request
+  if(Front_Back){
+    while(CurrentPosition < value-1){
+      CurrentPosition = Read(id, "Present_Position");
+      if(CurrentPosition >= MaxTick){
+        Torque_off(id);
+        return -1;
+      }
     }
   }
-  
+
+  // Moving to back request
+  else {
+    while(CurrentPosition > value+1){
+      CurrentPosition = Read(id, "Present_Position");
+      if(CurrentPosition <= MinTick){
+        Torque_off(id);
+        return -1;
+      }
+    }
+  }
+
   return 1;
 }
 
@@ -273,4 +387,42 @@ int32_t Read(uint8_t id, String commande){
   int32_t data = 0;
   dxl_wb.readRegister(id, commande.c_str(), &data, &NULL_POINTER);
   return data;
+}
+
+void Led(uint8_t ID, bool state){
+  Write(ID, (uint32_t)state, "LED");
+}
+
+void EmergencyStop(){
+      Torque_off(idX);
+      Torque_off(idY);
+      Torque_off(idZ);
+      Serial.println(-1);
+}
+
+void HomeAxe(String axe, uint8_t ID, int offset){
+  Torque_off(ID);
+  Torque_on(ID);
+  MovingDistance(axe, offset, idX, idY, idZ);
+  int homingPosition = Read(ID, "Present_Position");
+  Write(ID, (uint32_t)homingPosition, "Homing_Offset");
+}
+
+void LimiteSwitch(){
+  if(homing){
+    if(homingZ == HIGH && digitalRead(ZSwitchPin) == HIGH){
+      HomeAxe("Z", idZ, offsetZ);
+    }
+    else if(homingY == HIGH && digitalRead(YSwitchPin) == HIGH){
+      HomeAxe("Y", idY, offsetY);
+    }
+    else if(homingX == HIGH && digitalRead(XSwitchPin) == HIGH){
+      HomeAxe("X", idX, offsetX);
+    }
+  }
+  else{
+    EmergencyStop();
+    Serial.flush();
+    Serial.println("-1");
+  }
 }
