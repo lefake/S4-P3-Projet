@@ -77,7 +77,11 @@ def findDirection(image, line, column):
 
 
 def createSequence(image):
-
+	"""
+	Create a sequence of index coordinates from a path matrix
+	:param image: matrix of the path the tool needs to take
+	:return: Array of class coordinates (X , Y)  
+	"""
 	width = len(image[0])
 	height = len(image)
 	sequence = []
