@@ -1,17 +1,17 @@
 # PCB Device
 
-This program transforms a pcb drawing into a gcode
+This program transforms a pcb drawing into a gcode.
 
 ## Getting started
 
 To use this program, you need to launch main.py with the proper parameters or launch UI.py in /UI/ and enter the parameters in the boxes.
 The PCB drawing your are using needs to be of format *.pbm ,
-there are plenty of converters online to change your file format, such as [this converter we used](https://convertio.co/fr/pdf-pbm/)
+there are plenty of converters online to change your file format, such as [this converter we used](https://convertio.co/fr/pdf-pbm/).
 
 ### Prerequisites
 
 Since the program is coded in python, you need to install python, we used python 3.7.
-You can use an IDE or cmd to launch the program or the UI
+You can use an IDE or cmd to launch the program or the UI.
 
 ### Using the program
 
