@@ -68,6 +68,8 @@ def sendWithAck(gcodeCommand, timeoutCom):
 				raise RuntimeError('Command not executed')
 			if received.startswith('-1'):
 				raise RuntimeError('Command error')
+			if received.startswith('-2'):
+				raise RuntimeError('Device error, please reset the device')
 		else:
 			break
 
