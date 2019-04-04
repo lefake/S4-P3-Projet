@@ -36,8 +36,8 @@ If everything is good, you should read **SUCCESS** on the bottom of the UI, else
 
 ## People in this project
 
-**Ian Lalonde**
-**Marc-Antoine Lafrenière**
-**Maxime Laporte**
-**Guillaume Pépin**
-**Louis-Philippe Baillargeon**
+**Ian Lalonde** \n
+**Marc-Antoine Lafrenière** \n
+**Maxime Laporte** \n
+**Guillaume Pépin** \n
+**Louis-Philippe Baillargeon** \n
