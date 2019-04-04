@@ -21,23 +21,27 @@ You can launch UI.py in S4-P3-Projet/pcbdevice/UI/ for the user interface of the
 Enter the parameters in the proper boxes:
 
 ```
-* Pcb drawing file path you want to convert into gcode, this file needs to be of type *.pbm
-* Gcode file you want to save with the path where you want to save it.
+- Pcb drawing file path you want to convert into gcode, this file needs to be of type *.pbm
+- Gcode file you want to save with the path where you want to save it.
   If the file doesn't exist, a new file will be created, file type need to be *.gcode
-* If the pbm file is of type binary or ascii. To find the type, you can open the file in a text editor,
+- If the pbm file is of type binary or ascii. To find the type, you can open the file in a text editor,
   ascii files will start with P1 while binary with P4. Also, birary type will contain unreadable characters.
-* Width dimension of your pcb, units are entered later, 
-* Height dimension of your pcb, must be of the same units as width
-* Radius of the tool you are using, units must be in mm.
-* Units type for the width and height
+- Width dimension of your pcb, units are entered later, 
+- Height dimension of your pcb, must be of the same units as width
+- Radius of the tool you are using, units must be in mm.
+- Units type for the width and height
 ```
 Once all parameters are entered, you can click on the **execute program** button.
 If everything is good, you should read **SUCCESS** on the bottom of the UI, else and error code should appear.
 
 ## People in this project
 
-**Ian Lalonde** \n
-**Marc-Antoine Lafrenière** \n
-**Maxime Laporte** \n
-**Guillaume Pépin** \n
-**Louis-Philippe Baillargeon** \n
+**Ian Lalonde** 
+
+**Marc-Antoine Lafrenière** 
+
+**Maxime Laporte** 
+
+**Guillaume Pépin** 
+
+**Louis-Philippe Baillargeon** 
