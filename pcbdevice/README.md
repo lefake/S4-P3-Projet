@@ -20,7 +20,7 @@ You can launch UI.py in S4-P3-Projet/pcbdevice/UI/ for the user interface of the
 
 Enter the parameters in the proper boxes:
 
-'''
+```
 * Pcb drawing file path you want to convert into gcode, this file needs to be of type *.pbm
 * Gcode file you want to save with the path where you want to save it.
   If the file doesn't exist, a new file will be created, file type need to be *.gcode
@@ -30,14 +30,14 @@ Enter the parameters in the proper boxes:
 * Height dimension of your pcb, must be of the same units as width
 * Radius of the tool you are using, units must be in mm.
 * Units type for the width and height
-'''
-Once all parameters are entered, you can click on the **execute program* button.
-If everything is good, you should read **SUCCESS* on the bottom of the UI, else and error code should appear.
+```
+Once all parameters are entered, you can click on the **execute program** button.
+If everything is good, you should read **SUCCESS** on the bottom of the UI, else and error code should appear.
 
 ## People in this project
 
-**Ian Lalonde*
-**Marc-Antoine Lafrenière*
-**Maxime Laporte*
-**Guillaume Pépin*
-**Louis-Philippe Baillargeon*
+**Ian Lalonde**
+**Marc-Antoine Lafrenière**
+**Maxime Laporte**
+**Guillaume Pépin**
+**Louis-Philippe Baillargeon**
