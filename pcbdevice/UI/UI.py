@@ -56,14 +56,14 @@ class button:
 			print('FAIL')
 
 	def verifyEntry(self):
-		if not Width.Box.get().isdigit():
-			self.State.config(text = 'ERROR: Width needs to be a positive integer', fg = 'red', font = 'Helvetica 10 bold')
+		if not Width.Box.get().replace('.','',1).isdigit():
+			self.State.config(text = 'ERROR: Width needs to be a positive number', fg = 'red', font = 'Helvetica 10 bold')
 			return 0
-		if not Height.Box.get().isdigit():
-			self.State.config(text = 'ERROR: Height needs to be a positive integer', fg = 'red', font = 'Helvetica 10 bold')
+		if not Height.Box.get().replace('.','',1).isdigit():
+			self.State.config(text = 'ERROR: Height needs to be a positive number', fg = 'red', font = 'Helvetica 10 bold')
 			return 0
-		if not radius.Box.get().isdigit():
-			self.State.config(text = 'ERROR: Tool radius needs to be a positive integer', fg = 'red', font = 'Helvetica 10 bold')
+		if not radius.Box.get().replace('.','',1).isdigit():
+			self.State.config(text = 'ERROR: Tool radius needs to be a positive number', fg = 'red', font = 'Helvetica 10 bold')
 			return 0
 		if not (radius.Box.get() < Width.Box.get() or radius.Box.get() < Height.Box.get()):
 			self.State.config(text = 'ERROR: Tool radius needs to be smaller than Width and Height', fg = 'red', font = 'Helvetica 10 bold')
@@ -73,6 +73,13 @@ class button:
 			return 0
 		if not Gcode.path.endswith('.gcode'):
 			self.State.config(text = 'ERROR: File type is not .gcode', fg = 'red', font = 'Helvetica 10 bold')
+			return 0
+		try:
+			main(PCB.path, Gcode.path, bool(ascii.Box.current()), int(Width.Box.get()), int(Height.Box.get()),
+			     int(radius.Box.get()), unit.Box.get())
+		except:
+			self.State.config(text='ERROR: unexpected error', fg='red', font='Helvetica 10 bold')
+			#raise
 			return 0
 
 		self.State.config(text='SUCCESS: (ง ͠° ͟ل͜ ͡°)ง', fg='green', font='Helvetica 10 bold')
@@ -98,11 +105,15 @@ class pathFind:
 
 	def openDir(self):
 		self.path = str(askopenfilename(initialdir = "/",title = "Select file",filetypes = (("pbm files","*.pbm"),("all files","*.*"))))
+		self.Box.configure(state='normal')
 		self.Box.insert(END, self.path)
+		self.Box.configure(state='readonly')
 
 	def saveDir(self):
 		self.path = str(asksaveasfilename(initialdir = "/",title = "Select file",filetypes = (("pbm files","*.gcode"),("all files","*.*"))))
+		self.Box.configure(state='normal')
 		self.Box.insert(END, self.path)
+		self.Box.configure(state='readonly')
 
 	def createWidget(self, master, parameter, openSave):
 		frame = Frame(master, width=500, height=30, )
@@ -116,11 +127,9 @@ class pathFind:
 		else:
 			Butt = Button(frame, text = 'search', command = lambda: self.saveDir())
 		Butt.pack(side = RIGHT)
-		self.Box = Entry(frame, width=45)
+		self.Box = Entry(frame, width=45, state = 'readonly')
 		self.Box.pack(side=RIGHT, padx = 3)
 
-def display(this):
-	print(this)
 
 root.title('totally not a virus')
 root.geometry("550x300")
