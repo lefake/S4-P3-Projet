@@ -1,4 +1,4 @@
-# PCB Device
+# GCode Extractor
 
 This program transforms a pcb drawing into a gcode.
 
@@ -16,7 +16,7 @@ You can use an IDE or cmd to launch the program or the UI.
 ### Using the program
 
 After downloading the project,
-You can launch UI.py in S4-P3-Projet/pcbdevice/UI/ for the user interface of the program.
+You can launch UI.py in S4-P3-Projet/gcodeextractor/UI/ for the user interface of the program.
 
 Enter the parameters in the proper boxes:
 
