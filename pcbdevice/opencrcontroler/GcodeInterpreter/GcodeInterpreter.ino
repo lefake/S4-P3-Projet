@@ -93,7 +93,8 @@ void setup()
   pinMode(xSwitchPin, INPUT_PULLUP);
   pinMode(ySwitchPin, INPUT_PULLUP);
   pinMode(zSwitchPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(emergencySwitchPin), LimiteSwitch, FALLING);
+  pinMode(emergencySwitchPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(emergencySwitchPin), LimiteSwitch, RISING);
   
   Serial.begin(57600);
   while(!Serial); // Open a Serial Monitor  
@@ -136,9 +137,9 @@ void loop()
   
   if (Serial.available())
   {
+    String read_string = Serial.readStringUntil('\n');
     if(!isEmegencyState)
     {
-      String read_string = Serial.readStringUntil('\n');
       String words[] = {"", "", ""};
       
       int start = 0;
@@ -303,12 +304,6 @@ int MovingTick(uint8_t id, int32_t value){
 
 void LimiteSwitch(){
   if(!homing){
-    TorqueOffAll();
-
-    Led(idX, !digitalRead(xSwitchPin));
-    Led(idY, !digitalRead(ySwitchPin));
-    Led(idZ, !digitalRead(zSwitchPin));
-    
     isEmegencyState = true;
   }
 }
