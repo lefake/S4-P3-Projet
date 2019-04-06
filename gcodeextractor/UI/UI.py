@@ -4,7 +4,7 @@ from tkinter.filedialog import askdirectory, askopenfilename, asksaveasfilename
 from tkinter.ttk import Combobox
 import subprocess
 
-from pcbdevice.main import main
+from gcodeextractor.main import main
 
 root = Tk()
 frame = Frame(root)

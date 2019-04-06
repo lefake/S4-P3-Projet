@@ -1,22 +1,22 @@
 import math
 
-from pcbdevice.gcode.GcodeBuilder import listToGCode
+from gcodeextractor.gcode.GcodeBuilder import listToGCode
 
-from pcbdevice.gcode.GcodeCreator import createSequence
-from pcbdevice.gcode.path import path
-from pcbdevice.utils.FileUtils import FileUtils
+from gcodeextractor.gcode.GcodeCreator import createSequence
+from gcodeextractor.gcode.path import path
+from gcodeextractor.utils.FileUtils import FileUtils
 import argparse
 import subprocess
 
 def main(inputPath, outputPath, isAscii, heightReal, widthReal, tool, unit):
-	converterPath = '.\\pcbdevice\\utils\\convertiseur.exe'
+	converterPath = '.\\gcodeextractor\\utils\\convertiseur.exe'
 	
 	if outputPath.rfind('\\') != -1:
 		asciiPbmPath = outputPath[0:outputPath.rfind('\\')] + '\\pcbImageAscii.pbm'
 	elif outputPath.rfind('/') != -1:
 		asciiPbmPath = outputPath[0:outputPath.rfind('/')] + '/pcbImageAscii.pbm'
 	else:
-		asciiPbmPath = '.\\pcbdevice\\resources\\output\\pcbImageAscii.pbm'
+		asciiPbmPath = '.\\gcodeextractor\\resources\\output\\pcbImageAscii.pbm'
 		
 	if not isAscii:
 		subprocess.check_call([converterPath, inputPath, asciiPbmPath])

@@ -1,10 +1,10 @@
 from unittest import TestCase
 
-from pcbdevice.utils import TestUtils
-from pcbdevice.utils.FileUtils import FileUtils
-from pcbdevice.utils.TestUtils import readStringFile
+from gcodeextractor.utils import TestUtils
+from gcodeextractor.utils.FileUtils import FileUtils
+from gcodeextractor.utils.TestUtils import readStringFile
 
-resources = './pcbdevice/tests/resources/'
+resources = './gcodeextractor/tests/resources/'
 
 class TestFileUtils(TestCase):
 	def test_pbmToMatrix(self):

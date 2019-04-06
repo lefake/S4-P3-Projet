@@ -1,4 +1,4 @@
-from pcbdevice.models.Coordinates import Coordinate
+from gcodeextractor.models.Coordinates import Coordinate
 
 
 def findEndOfLine(image, direction, line, column, sequence):
