@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from pcbdevice.gcode.GcodeBuilder import listToGCode
-from pcbdevice.models.Coordinates import Coordinate
+from gcodeextractor.gcode.GcodeBuilder import listToGCode
+from gcodeextractor.models.Coordinates import Coordinate
 
 
 class TestListToGCode(TestCase):

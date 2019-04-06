@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from pcbdevice.gcode.GcodeCreator import createSequence, findDirection, findEndOfLine
-from pcbdevice.models.Coordinates import Coordinate
+from gcodeextractor.gcode.GcodeCreator import createSequence, findDirection, findEndOfLine
+from gcodeextractor.models.Coordinates import Coordinate
 
 
 class TestGcodeCreator(TestCase):

@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from pcbdevice.gcode.path import scanHorizontal, scanVertical, twoRemoving
+from gcodeextractor.gcode.path import scanHorizontal, scanVertical, twoRemoving
 
 
 class TestPath(TestCase):
