@@ -58,20 +58,26 @@ def sendWithAck(gcodeCommand, timeoutCom):
 	commandTimeout = 0
 	
 	serial.write(gcodeCommand.encode('UTF-8'))
-	if not serial.readline().decode('UTF-8').startswith('2'):
+	
+	received = serial.readline().decode('UTF-8')
+	
+	if received.startswith('-2'):
+		raise RuntimeError('Device error, please reset the device')
+	elif not received.startswith('2'):
 		raise RuntimeError('Communication lost')
 	while True:
 		received = serial.readline().decode('UTF-8')
-		if not received.startswith('1') or received.startswith('-1'):
+		
+		if received.startswith('1'):
+			break
+		elif received.startswith('-2'):
+			raise RuntimeError('Device error, please reset the device')
+		elif received.startswith('-1'):
+			raise RuntimeError('Command error')
+		else:
 			commandTimeout += 1
 			if commandTimeout > timeoutCom * 10:
 				raise RuntimeError('Command not executed')
-			if received.startswith('-1'):
-				raise RuntimeError('Command error')
-			if received.startswith('-2'):
-				raise RuntimeError('Device error, please reset the device')
-		else:
-			break
 
 
 def sendFileToPort(comPort, baudRate, communicationTimeout, waitTime, gcodePath):
@@ -141,13 +147,13 @@ if __name__ == "__main__":
 	gcodeEntry = LabelWithEntry(autoMainFrame, 'GCode file', padXLeft = (0, padding))
 	comEntry = LabelWithEntry(autoMainFrame, 'COM port', padXLeft = (0, padding))
 	baudrateEntry = LabelWithEntry(autoMainFrame, 'Baudrate', padXLeft = (0, padding))
-	baudrateEntry.setText('9600')
+	baudrateEntry.setText('57600')
 	
 	comTimoutEntry = LabelWithEntry(autoMainFrame, 'Com timout (s)', padXLeft = (0, padding))
-	comTimoutEntry.setText('1')
+	comTimoutEntry.setText('2')
 	
 	sleepEntry = LabelWithEntry(autoMainFrame, 'Sleep init (s)', padXLeft = (0, padding))
-	sleepEntry.setText('1')
+	sleepEntry.setText('2')
 	
 	Button(autoMainFrame, text = 'Start',
 	       command = lambda: callWithParameters(comEntry, baudrateEntry, comTimoutEntry, sleepEntry, gcodeEntry)) \
