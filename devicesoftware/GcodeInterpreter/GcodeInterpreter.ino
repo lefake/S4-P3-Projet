@@ -61,10 +61,31 @@ const int emergencySwitchPin = 2; // intrupt pin
 
 // Homing variables
 bool homing = false;
+bool homingX = false;
+bool homingY = false;
+bool homingZ = false;
+int homingState = 0;
 
 const int homeOffsetX = 10*tickFromMm;
 const int homeOffsetY = 10*tickFromMm;
-const int homeOffsetZ = 10*tickFromMm;
+const int homeOffsetZ = 5*tickFromMm;
+
+// Debounce timer variables
+bool isFalling = false;
+long debounceTimeFalling = 250;
+long lastTimeXFalling = 0;
+long lastTimeYFalling = 0;
+long lastTimeZFalling = 0;
+
+bool isRising = false;
+long debounceTimeRising = 250;
+long lastTimeXRising = 0;
+long lastTimeYRising = 0;
+long lastTimeZRising = 0;
+
+bool isXSwitchPress = false;
+bool isYSwitchPress = false;
+bool isZSwitchPress = false;
 
 // Fonctions prototypes : 
 void Begin(uint32_t baud);
@@ -81,25 +102,22 @@ void TorqueOffAll();
 void OffsetAxe(uint8_t id, int offset);
 void LimiteSwitch();
 int MovingTick(uint8_t id, int32_t value);
-int Homing();
-int HomingAxis(uint8_t id, int speed, int switchPin, int offset);
+void HomingAxis(uint8_t id, int speed);
 uint8_t getIdFromChar(char letter);
 
 // Initialisation :
 void setup() 
 {
-
   // Initialisation des pins :
   pinMode(xSwitchPin, INPUT_PULLUP);
   pinMode(ySwitchPin, INPUT_PULLUP);
   pinMode(zSwitchPin, INPUT_PULLUP);
   pinMode(emergencySwitchPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(emergencySwitchPin), LimiteSwitch, FALLING);
+  attachInterrupt(digitalPinToInterrupt(emergencySwitchPin), LimiteSwitch, CHANGE);
   
   Serial.begin(57600);
-  while(!Serial); // Open a Serial Monitor  
 
-    //Motor Initialisation Section :
+  //Motor Initialisation Section :
   Begin((uint32_t)57600);
   Ping(idX);
   Ping(idY);
@@ -120,7 +138,7 @@ void setup()
   Write(idY, 0, HOMING_OFFSET);
   Write(idZ, 0, HOMING_OFFSET);
 
-  dxl_wb.writeRegister(idX, 10, 1, &  , &NULL_POINTER);
+  dxl_wb.writeRegister(idX, 10, 1, &X_REVERSE, &NULL_POINTER);
   dxl_wb.writeRegister(idY, 10, 1, &Y_REVERSE, &NULL_POINTER);
   dxl_wb.writeRegister(idZ, 10, 1, &Z_REVERSE, &NULL_POINTER);
 
@@ -132,10 +150,146 @@ void setup()
 // Main Program
 void loop() 
 {
+  if(isFalling)
+  {
+    if(digitalRead(xSwitchPin))
+    {
+      if(millis() - lastTimeXFalling > debounceTimeFalling)
+      {
+        lastTimeXFalling = millis();
+        isFalling = false;
+        isXSwitchPress = true;
+
+        if(homingX)
+        {
+          homingX = false;
+          OffsetAxe(idX, homeOffsetX);
+          Write(idX, 4, OPERATING_MODE);
+          homingState += MovingTick(idX, 0);
+
+          Serial.println(homingState == 3 ? "1" : "-1");
+          homingState = 0;
+          homing = false;
+        }
+        else
+          isEmegencyState = true;
+      }
+    }
+    else
+    {
+      lastTimeXFalling = millis();
+      isXSwitchPress = false;
+    }
+
+    if(digitalRead(ySwitchPin))
+    {
+      if(millis() - lastTimeYFalling > debounceTimeFalling)
+      {
+        lastTimeYFalling = millis();
+        isFalling = false;
+        isYSwitchPress = true;
+
+        if(homingY)
+        {
+          homingY = false;
+          OffsetAxe(idY, homeOffsetY);
+          Write(idY, 4, OPERATING_MODE);
+          homingState += MovingTick(idY, 0);
+
+          homingX = true;
+          HomingAxis(idX, -100);
+        }
+        else
+          isEmegencyState = true;
+      }
+    }
+    else
+    {
+      lastTimeYFalling = millis();
+      isYSwitchPress = false;
+    }
+
+    if(digitalRead(zSwitchPin))
+    {
+      if(millis() - lastTimeZFalling > debounceTimeFalling)
+      {
+        lastTimeZFalling = millis();
+        isFalling = false;
+        isZSwitchPress = true;
+        
+        if(homingZ)
+        {
+          homingZ = false;
+          OffsetAxe(idZ, homeOffsetZ);
+          Write(idZ, 4, OPERATING_MODE);
+          homingState += MovingTick(idZ, 0);
+
+          homingY = true;
+          HomingAxis(idY, -100);
+        }
+        else
+          isEmegencyState = true;
+      }
+    }
+    else
+    {
+      lastTimeZFalling = millis();
+      isZSwitchPress = false;
+    }
+
+    if(!digitalRead(xSwitchPin) && !digitalRead(ySwitchPin) && !digitalRead(zSwitchPin))
+      isFalling = false;
+  }
+
+  if(isRising)
+  {
+    if(!digitalRead(xSwitchPin))
+    {
+      if(millis() - lastTimeXRising > debounceTimeRising)
+      {
+        lastTimeXRising = millis();
+        isRising = false;
+        isXSwitchPress = false;
+      }
+    }
+    else
+      lastTimeXRising = millis();
+
+    if(!digitalRead(ySwitchPin))
+    {
+      if(millis() - lastTimeYRising > debounceTimeRising)
+      {
+        lastTimeYRising = millis();
+        isRising = false;
+        isYSwitchPress = false;
+      }
+    }
+    else
+      lastTimeYRising = millis();
+
+    if(!digitalRead(zSwitchPin))
+    {
+      if(millis() - lastTimeZRising > debounceTimeRising)
+      {
+        lastTimeZRising = millis();
+        isRising = false;
+        isZSwitchPress = false;
+      }
+    }
+    else
+      lastTimeZRising = millis();
+
+    if(digitalRead(xSwitchPin) && digitalRead(ySwitchPin) && digitalRead(zSwitchPin))
+    {
+      isRising = false;
+    }
+  }
+
+  
   if(isEmegencyState)
     setEmergency();
   
-  if (Serial.available())
+  if (!homing && Serial.available())
   {
     String read_string = Serial.readStringUntil('\n');
     if(!isEmegencyState)
@@ -182,8 +336,11 @@ void loop()
           }
       }
       
-      else if(words[0] == "G28"){
-        Serial.println(Homing());
+      else if(words[0] == "G28")
+      {
+        homing = true;
+        homingZ = true;
+        HomingAxis(idZ, -50);
       }
       else if(words[0] == "M18"){
           TorqueOffAll();
@@ -233,29 +390,12 @@ uint8_t getIdFromChar(char letter)
         return -1;
 }
 
-int Homing()
-{
-  int state = 0;
-  homing = true;
-  
-  //state += HomingAxis(idZ, -50, zSwitchPin, homeOffsetZ);
-  state += HomingAxis(idY, -100, ySwitchPin, homeOffsetY);
-  state += HomingAxis(idX, -100, xSwitchPin, homeOffsetX);
-  
-  homing = false;
-  return state == 2 ? 1 : -1;
-}
-
-int HomingAxis(uint8_t id, int speed, int switchPin, int offset)
+void HomingAxis(uint8_t id, int speed)
 {
   Torque_off(id);
   Write(id, 0, HOMING_OFFSET);
   Torque_on(id);
   Wheel(id, speed);
-  while(!digitalRead(switchPin));
-  OffsetAxe(id, offset);
-  Write(id, 4, OPERATING_MODE);
-  return MovingTick(id, 0);
 }
 
 void OffsetAxe(uint8_t id, int offset){
@@ -284,7 +424,7 @@ int MovingTick(uint8_t id, int32_t value){
   }
   else
   {
-    Torque_off(id); 
+    Torque_off(id);
     return -1;
   }
   
@@ -311,9 +451,10 @@ int MovingTick(uint8_t id, int32_t value){
 }
 
 void LimiteSwitch(){
-  if(!homing){
-    isEmegencyState = true;
-  }
+  if(!digitalRead(emergencySwitchPin))
+    isRising = true;
+  else
+    isFalling = true;
 }
 
 void setEmergency()
@@ -321,7 +462,7 @@ void setEmergency()
   TorqueOffAll();
   Led(idX, !digitalRead(xSwitchPin));
   Led(idY, !digitalRead(ySwitchPin)); 
-  Led(idZ, !digitalRead(zSwitchPin)); 
+  Led(idZ, !digitalRead(zSwitchPin));
 }
 
 
