@@ -34,14 +34,8 @@ Enter the parameters in the proper boxes:
 Once all parameters are entered, you can click on the **execute program** button.
 If everything is good, you should read **SUCCESS** on the bottom of the UI, else and error code should appear.
 
-## People in this project
+## Authors
 
 **Ian Lalonde** 
 
 **Marc-Antoine Lafrenière** 
-
-**Maxime Laporte** 
-
-**Guillaume Pépin** 
-
-**Louis-Philippe Baillargeon** 
