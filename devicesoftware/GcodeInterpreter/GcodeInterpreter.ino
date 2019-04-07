@@ -94,7 +94,7 @@ void setup()
   pinMode(ySwitchPin, INPUT_PULLUP);
   pinMode(zSwitchPin, INPUT_PULLUP);
   pinMode(emergencySwitchPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(emergencySwitchPin), LimiteSwitch, RISING);
+  attachInterrupt(digitalPinToInterrupt(emergencySwitchPin), LimiteSwitch, FALLING);
   
   Serial.begin(57600);
   while(!Serial); // Open a Serial Monitor  
@@ -120,7 +120,7 @@ void setup()
   Write(idY, 0, HOMING_OFFSET);
   Write(idZ, 0, HOMING_OFFSET);
 
-  dxl_wb.writeRegister(idX, 10, 1, &X_REVERSE, &NULL_POINTER);
+  dxl_wb.writeRegister(idX, 10, 1, &  , &NULL_POINTER);
   dxl_wb.writeRegister(idY, 10, 1, &Y_REVERSE, &NULL_POINTER);
   dxl_wb.writeRegister(idZ, 10, 1, &Z_REVERSE, &NULL_POINTER);
 
@@ -238,12 +238,12 @@ int Homing()
   int state = 0;
   homing = true;
   
-  state += HomingAxis(idZ, -50, xSwitchPin, homeOffsetZ);
-  state += HomingAxis(idY, -100, xSwitchPin, homeOffsetY);
+  //state += HomingAxis(idZ, -50, zSwitchPin, homeOffsetZ);
+  state += HomingAxis(idY, -100, ySwitchPin, homeOffsetY);
   state += HomingAxis(idX, -100, xSwitchPin, homeOffsetX);
   
   homing = false;
-  return state == 3 ? 1 : -1;
+  return state == 2 ? 1 : -1;
 }
 
 int HomingAxis(uint8_t id, int speed, int switchPin, int offset)
@@ -252,7 +252,7 @@ int HomingAxis(uint8_t id, int speed, int switchPin, int offset)
   Write(id, 0, HOMING_OFFSET);
   Torque_on(id);
   Wheel(id, speed);
-  while(digitalRead(switchPin));
+  while(!digitalRead(switchPin));
   OffsetAxe(id, offset);
   Write(id, 4, OPERATING_MODE);
   return MovingTick(id, 0);
@@ -262,6 +262,14 @@ void OffsetAxe(uint8_t id, int offset){
   int32_t posPresent = Read(id, PRESENT_POSITION);
   int32_t homePosition = - posPresent - offset;
   Torque_off(id); 
+
+  if(id == idX && X_REVERSE)
+    homePosition *= -1;
+  else if(id == idY && Y_REVERSE)
+    homePosition *= -1;
+  else if(id == idZ && Z_REVERSE)
+    homePosition *= -1;
+  
   Write(id, homePosition, HOMING_OFFSET);
 }
 
