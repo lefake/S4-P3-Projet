@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from gcodeextractor.gcode.GcodeBuilder import listToGCode
-from gcodeextractor.models.Coordinates import Coordinate
+from gcodeextractor.utils.Coordinates import Coordinate
 
 
 class TestListToGCode(TestCase):
