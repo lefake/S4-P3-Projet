@@ -41,7 +41,7 @@ We then create a sequence of coordinates for the tool to follow to cover all the
 
 The last file is GcodeBuilder.py, it transforms the sequence of point into a standard gcode file. It does so by changing the coordinates in pixels, into coordinates in mm according to the dimensions of the pcb. If the coordinates are (-1,-1), this means the sequence has finished a path and the tool should not be working until it gets to the next coordinates. The gcode file also starts with a header and ends with a footer to add some configurations and a homing.
 
-### tests
+### Tests
 
 For path.py's function, we tested the three functions with small matrix of 0's and 1's and wrote the expected results manually to compare if the functions returned what we expected. We also tested if the algorithms would still work if it had to write or read out of bound of the image, which is verified in the algorithms. 
 
