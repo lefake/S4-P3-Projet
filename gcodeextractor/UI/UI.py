@@ -49,8 +49,8 @@ class button:
 
 	def execution(self):
 		if self.verifyEntry():
-			main(PCB.path, Gcode.path, bool(ascii.Box.current()), int(Width.Box.get()), int(Height.Box.get()),
-			     int(radius.Box.get()), unit.Box.get())
+			main(PCB.path, Gcode.path, bool(ascii.Box.current()), float(Width.Box.get()), float(Height.Box.get()),
+			     float(radius.Box.get()), unit.Box.get())
 			os.startfile(Gcode.path.rsplit('/', 1)[0])
 		else:
 			print('FAIL')
@@ -75,8 +75,8 @@ class button:
 			self.State.config(text = 'ERROR: File type is not .gcode', fg = 'red', font = 'Helvetica 10 bold')
 			return 0
 		try:
-			main(PCB.path, Gcode.path, bool(ascii.Box.current()), int(Width.Box.get()), int(Height.Box.get()),
-			     int(radius.Box.get()), unit.Box.get())
+			main(PCB.path, Gcode.path, bool(ascii.Box.current()), float(Width.Box.get()), float(Height.Box.get()),
+			     float(radius.Box.get()), unit.Box.get())
 		except:
 			self.State.config(text='ERROR: unexpected error', fg='red', font='Helvetica 10 bold')
 			#raise
@@ -138,10 +138,10 @@ root.geometry("550x300")
 PCB = pathFind(root, 'PCB image path', TRUE)
 Gcode = pathFind(root, 'Gcode output path', FALSE)
 ascii = menuBox(root, 'If the image is in ascii or binary', ['binary','ascii'])
-Width = textBox(root, 'Width of the PCB', 100)
 Height = textBox(root, 'Height of the PCB', 100)
-radius = textBox(root, 'Tool\'s radius in mm', 1)
-unit = menuBox(root, 'PCB dimension unit', ['mm', 'm', 'in'])
+Width = textBox(root, 'Width of the PCB', 100)
+radius = textBox(root, 'Tool\'s radius in mm', 0.37)
+unit = menuBox(root, 'PCB dimension unit', ['mm', 'cm', 'm', 'in'])
 
 button = button(root)
 
