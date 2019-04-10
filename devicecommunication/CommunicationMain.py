@@ -78,7 +78,7 @@ def sendWithAck(gcodeCommand, timeoutCom):
 			raise RuntimeError('Command error : ' + gcodeCommand)
 		else:
 			commandTimeout += 1
-			if commandTimeout > timeoutCom * 10:
+			if commandTimeout > timeoutCom * 100:
 				raise RuntimeError('Command not executed')
 
 
