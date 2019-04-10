@@ -69,8 +69,8 @@ bool homingY = false;
 bool homingZ = false;
 int homingState = 0;
 
-const int homeOffsetX = /*28*/48*tickFromMm;
-const int homeOffsetY = /*19.5*/40*tickFromMm;
+const int homeOffsetX = /*28*/50*tickFromMm;
+const int homeOffsetY = /*19.5*/50*tickFromMm;
 const int homeOffsetZ = 2.5*tickFromMm;
 
 // Debounce timer variables
@@ -90,6 +90,11 @@ bool isXSwitchPress = false;
 bool isYSwitchPress = false;
 bool isZSwitchPress = false;
 
+// eStop
+bool ledX = false;
+bool ledY = false;
+bool ledZ = false;
+
 // Moving variables
 bool isMoving = false;
 bool currentMoveDone = false;
@@ -97,6 +102,7 @@ bool hasFailed = false;
 int currentMove = 0;
 int nbsMovements = 0;
 int32_t currentPosition = 0;
+int32_t movingSpeed[] = { 75, 75 };
 MovingCommand commands[3];
 
 // Initialisation :
@@ -135,7 +141,9 @@ void setup()
   dxl_wb.writeRegister(idX, 10, 1, &X_REVERSE, &NULL_POINTER);
   dxl_wb.writeRegister(idY, 10, 1, &Y_REVERSE, &NULL_POINTER);
   dxl_wb.writeRegister(idZ, 10, 1, &Z_REVERSE, &NULL_POINTER);
-  
+
+  Write(idX, movingSpeed[0], "Profile_Velocity");
+  Write(idY, movingSpeed[1], "Profile_Velocity");
 
   Torque_on(idX);
   Torque_on(idY);
@@ -173,7 +181,10 @@ void loop()
           Write(commands[currentMove]._motorId, commands[currentMove]._goalPosition, GOAL_POSITION); 
         }
         else
+        {
           isEmegencyState = true;
+          ledX = true;
+        }
       }
     }
     else
@@ -206,7 +217,10 @@ void loop()
           Write(commands[currentMove]._motorId, commands[currentMove]._goalPosition, GOAL_POSITION);
         }
         else
+        {
           isEmegencyState = true;
+          ledY = true;
+        }
       }
     }
     else
@@ -239,7 +253,10 @@ void loop()
           Write(commands[currentMove]._motorId, commands[currentMove]._goalPosition, GOAL_POSITION);
         }
         else
+          {
           isEmegencyState = true;
+          ledZ = true;
+        }
       }
     }
     else
@@ -329,6 +346,9 @@ void loop()
           homing = false;
           Serial.println(homingState == 3 ? "1" : "-1");
           homingState = 0;
+
+          Write(idX, movingSpeed[0], "Profile_Velocity");
+          Write(idY, movingSpeed[1], "Profile_Velocity");
         }
         resetMovingVariables();
       }
@@ -521,9 +541,15 @@ void setEmergency()
 {
   isMoving = false;
   TorqueOffAll();
-  Led(idX, digitalRead(xSwitchPin));
-  Led(idY, digitalRead(ySwitchPin)); 
-  Led(idZ, digitalRead(zSwitchPin));
+  Led(idX, ledX);
+  Led(idY, ledY); 
+  Led(idZ, ledZ);
+}
+
+void changeMode(uint8_t id)
+{
+  Write(id, 4, OPERATING_MODE);
+  //Write(id, movingSpeed[id-idX], "Profile_Velocity");
 }
 
 

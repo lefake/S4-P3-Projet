@@ -18,5 +18,6 @@ void HomingAxis(uint8_t id, int speed);
 uint8_t getIdFromChar(char letter);
 bool isInRange(int curPos, int goal);
 void resetMovingVariables();
+void changeMode(uint8_t id);
 
 #endif
