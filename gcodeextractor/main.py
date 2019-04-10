@@ -26,9 +26,9 @@ def main(inputPath, outputPath, isAscii, heightReal, widthReal, tool, unit):
 	pxHeight, pxWidth = FileUtils.getPixelSize(height, width, heightReal, widthReal, unit = unit)
 	
 	if pxHeight > pxWidth:
-		rTool = int(math.ceil(tool * pxHeight))
+		rTool = int(math.ceil(tool / pxHeight))
 	else:
-		rTool = int(math.ceil(tool * pxWidth))
+		rTool = int(math.ceil(tool / pxWidth))
 	
 	matrixUpdated = path(matrix, rTool)
 	listIndexes = createSequence(matrixUpdated)
@@ -40,9 +40,9 @@ if __name__ == "__main__":
 	parser.add_argument('-i', required = True, help = 'PCB image path')
 	parser.add_argument('--ascii', required = False, dest='imgTypeisAscii', action = 'store_true', help = 'If the image is in ascii(True) or binary(False)')
 	parser.add_argument('-o', required = True, help = 'Gcode output path')
-	parser.add_argument('-wi', required = True, type = int, help = 'Width of the PCB')
-	parser.add_argument('-he', required = True, type = int, help = 'Height of the PCB')
-	parser.add_argument('-t', required = True, type = int, help = 'Tool\'s radius in mm')
+	parser.add_argument('-wi', required = True, type = float, help = 'Width of the PCB')
+	parser.add_argument('-he', required = True, type = float, help = 'Height of the PCB')
+	parser.add_argument('-t', required = True, type = float, help = 'Tool\'s radius in mm')
 	parser.add_argument('-u', required = False, help = 'PCB dimension unit')
 	args = parser.parse_args()
 	
