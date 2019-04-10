@@ -24,12 +24,12 @@ def listToGCode(listIndex, pHeight, pWidth):
 		else:
 			gcodeCommand.append('G0 X' + str(round(coord.getX()*pWidth, 2)) + ' Y' + str(round(coord.getY()*pHeight, 2)))
 			if toolUp:
-				gcodeCommand.append('G0 Z3')
+				gcodeCommand.append('G0 Z10.5')
 				toolUp = False
 			
 	# FOOTER
 	gcodeCommand.append('\nG0 Z0')
-	gcodeCommand.append('G28')
+	gcodeCommand.append('G0 X0 Y0')
 	gcodeCommand.append('M18')
 	
 	return gcodeCommand

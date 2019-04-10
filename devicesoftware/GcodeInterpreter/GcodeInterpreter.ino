@@ -9,6 +9,8 @@ Baud for motors : 57600 b/s
 Adress for motors : 11 and 12 and 13
 *******************************************************************************/
 #include <DynamixelWorkbench.h>
+#include "functions.h"
+#include "models.h"
 
 #if defined(__OPENCM904__)
   #define DEVICE_NAME "3"
@@ -19,6 +21,7 @@ Adress for motors : 11 and 12 and 13
 #define STRING_BUF_NUM 64
 #define MINTICK 0
 #define MAXTICK 1048575
+const int ACCEPTABLE_RANGE[3] = { 2, 2, 3 };
 
 // 0 = not reverse, 1 = reverse
 uint8_t X_REVERSE = 0;
@@ -66,9 +69,9 @@ bool homingY = false;
 bool homingZ = false;
 int homingState = 0;
 
-const int homeOffsetX = 10*tickFromMm;
-const int homeOffsetY = 10*tickFromMm;
-const int homeOffsetZ = 5*tickFromMm;
+const int homeOffsetX = /*28*/48*tickFromMm;
+const int homeOffsetY = /*19.5*/40*tickFromMm;
+const int homeOffsetZ = 2.5*tickFromMm;
 
 // Debounce timer variables
 bool isFalling = false;
@@ -87,23 +90,14 @@ bool isXSwitchPress = false;
 bool isYSwitchPress = false;
 bool isZSwitchPress = false;
 
-// Fonctions prototypes : 
-void Begin(uint32_t baud);
-void Ping(int identification);
-void Scan();
-void Joint(uint8_t id, uint16_t goal);
-void Wheel(uint8_t id, int32_t goal);
-void Torque_on(uint8_t id);
-void Torque_off(uint8_t id);
-void Write(uint8_t id, uint32_t value, String commande);
-int32_t Read(uint8_t id, String commande);
-void Led(uint8_t id, bool state);
-void TorqueOffAll();
-void OffsetAxe(uint8_t id, int offset);
-void LimiteSwitch();
-int MovingTick(uint8_t id, int32_t value);
-void HomingAxis(uint8_t id, int speed);
-uint8_t getIdFromChar(char letter);
+// Moving variables
+bool isMoving = false;
+bool currentMoveDone = false;
+bool hasFailed = false;
+int currentMove = 0;
+int nbsMovements = 0;
+int32_t currentPosition = 0;
+MovingCommand commands[3];
 
 // Initialisation :
 void setup() 
@@ -141,10 +135,13 @@ void setup()
   dxl_wb.writeRegister(idX, 10, 1, &X_REVERSE, &NULL_POINTER);
   dxl_wb.writeRegister(idY, 10, 1, &Y_REVERSE, &NULL_POINTER);
   dxl_wb.writeRegister(idZ, 10, 1, &Z_REVERSE, &NULL_POINTER);
+  
 
   Torque_on(idX);
   Torque_on(idY);
   Torque_on(idZ);
+
+  resetMovingVariables();
 }
 
 // Main Program
@@ -164,12 +161,16 @@ void loop()
         {
           homingX = false;
           OffsetAxe(idX, homeOffsetX);
+          Torque_off(idX);
           Write(idX, 4, OPERATING_MODE);
-          homingState += MovingTick(idX, 0);
-
-          Serial.println(homingState == 3 ? "1" : "-1");
-          homingState = 0;
-          homing = false;
+          Torque_on(idX);
+          
+          currentMove = 0;
+          nbsMovements = 1;
+          commands[currentMove]._motorId = idX;
+          commands[currentMove]._goalPosition = 0;
+          isMoving = true;
+          Write(commands[currentMove]._motorId, commands[currentMove]._goalPosition, GOAL_POSITION); 
         }
         else
           isEmegencyState = true;
@@ -193,11 +194,16 @@ void loop()
         {
           homingY = false;
           OffsetAxe(idY, homeOffsetY);
+          Torque_off(idY);
           Write(idY, 4, OPERATING_MODE);
-          homingState += MovingTick(idY, 0);
-
-          homingX = true;
-          HomingAxis(idX, -100);
+          Torque_on(idY);
+          
+          currentMove = 0;
+          nbsMovements = 1;
+          commands[currentMove]._motorId = idY;
+          commands[currentMove]._goalPosition = 0;
+          isMoving = true;
+          Write(commands[currentMove]._motorId, commands[currentMove]._goalPosition, GOAL_POSITION);
         }
         else
           isEmegencyState = true;
@@ -221,11 +227,16 @@ void loop()
         {
           homingZ = false;
           OffsetAxe(idZ, homeOffsetZ);
+          Torque_off(idZ);
           Write(idZ, 4, OPERATING_MODE);
-          homingState += MovingTick(idZ, 0);
+          Torque_on(idZ);
 
-          homingY = true;
-          HomingAxis(idY, -100);
+          currentMove = 0;
+          nbsMovements = 1;
+          commands[currentMove]._motorId = idZ;
+          commands[currentMove]._goalPosition = 0;
+          isMoving = true;          
+          Write(commands[currentMove]._motorId, commands[currentMove]._goalPosition, GOAL_POSITION);
         }
         else
           isEmegencyState = true;
@@ -285,11 +296,60 @@ void loop()
     }
   }
 
+  if(isMoving)
+  {
+    currentPosition = Read(commands[currentMove]._motorId, PRESENT_POSITION);
+    if(isInRange(currentPosition, commands[currentMove]._goalPosition, commands[currentMove]._motorId))
+    {
+      currentMoveDone = true;
+    }
+  }
+
+  if(isMoving && currentMoveDone)
+  {
+    if(currentMove+1 >= nbsMovements)
+    {
+      if(homing)
+      {
+        if(commands[currentMove]._motorId == idZ)
+        {
+          homingY = true;
+          HomingAxis(idY, -100);
+          homingState++;
+        }
+        else if(commands[currentMove]._motorId == idY)
+        {
+          homingX = true;
+          HomingAxis(idX, -100);
+          homingState++;
+        }
+        else if(commands[currentMove]._motorId == idX)
+        {
+          homingState++;
+          homing = false;
+          Serial.println(homingState == 3 ? "1" : "-1");
+          homingState = 0;
+        }
+        resetMovingVariables();
+      }
+      else
+      {
+        resetMovingVariables();
+        Serial.println("1");
+      }
+    }
+    else
+    {
+      currentMoveDone = false;
+      currentMove++;
+      Write(commands[currentMove]._motorId, commands[currentMove]._goalPosition, GOAL_POSITION);
+    }
+  }
   
   if(isEmegencyState)
     setEmergency();
   
-  if (!homing && Serial.available())
+  if (!homing && !isMoving && Serial.available())
   {
     String read_string = Serial.readStringUntil('\n');
     if(!isEmegencyState)
@@ -309,31 +369,42 @@ void loop()
         }
       }
       words[wordIndex] = read_string.substring(start, read_string.length());
-      
-      Serial.println("2"); 
+      nbsMovements = wordIndex;
+      Serial.println("2");
 
       if(words[0] == "G0")
       {
-          for(int i = 1; i < wordIndex+1; i++)
-          {
-              if(words[i].length() > 1)
-              {
-                  float value = words[i].substring(1, words[i].length()).toFloat();
-                  uint8_t idMotor = getIdFromChar((char)words[i].charAt(0));
-                  if(idMotor == -1)
-                      Serial.println("-1");
-                  else
-                      statut[i] = MovingTick(idMotor, value*tickFromMm);
-              }
-              else
+        int i;
+        for(i = 1; i < wordIndex+1; i++)
+        {
+            if(words[i].length() > 1)
+            {
+                float value = words[i].substring(1, words[i].length()).toFloat();
+                uint8_t idMotor = getIdFromChar((char)words[i].charAt(0));
+                if(idMotor == -1)
+                {
                   Serial.println("-1");
-          }
-          if((statut[0] == 1 || statut[0] == 0) && (statut[1] == 1 || statut[1] == 0) && (statut[2] == 1|| statut[2] == 0)){
-              Serial.println("1");
-          }
-          else{
+                  break;
+                }
+                else
+                {
+                  commands[i-1]._motorId = idMotor;
+                  commands[i-1]._goalPosition = value*tickFromMm;
+                }
+            }
+            else
+            {
               Serial.println("-1");
-          }
+              break;
+            }
+        }
+        
+        if(i == wordIndex+1)
+        {
+          isMoving = true;
+          currentMove = 0;
+          Write(commands[currentMove]._motorId, commands[currentMove]._goalPosition, GOAL_POSITION);
+        }
       }
       
       else if(words[0] == "G28")
@@ -366,6 +437,10 @@ void loop()
         TorqueOnAll();
         Serial.println("1");
       }
+      else if(words[0] == "G90")
+      {
+        Serial.println("1");
+      }
       else
       { 
         Serial.println("-1");
@@ -390,6 +465,27 @@ uint8_t getIdFromChar(char letter)
         return -1;
 }
 
+bool isInRange(int goal, int curPos, uint8_t id)
+{
+  return (abs(goal - curPos) <= ACCEPTABLE_RANGE[id-idX]);
+}
+
+void resetMovingVariables()
+{
+  isMoving = false;
+  currentMoveDone = false;
+  currentMove = 0;
+  nbsMovements = 0;
+  currentPosition = 0;
+  hasFailed = false;
+
+  for(int i = 0; i < 3; i++)
+  {
+    commands[i]._motorId = i+idX;
+    commands[i]._goalPosition = Read(i+idX, PRESENT_POSITION);
+  }
+}
+
 void HomingAxis(uint8_t id, int speed)
 {
   Torque_off(id);
@@ -401,7 +497,7 @@ void HomingAxis(uint8_t id, int speed)
 void OffsetAxe(uint8_t id, int offset){
   int32_t posPresent = Read(id, PRESENT_POSITION);
   int32_t homePosition = - posPresent - offset;
-  Torque_off(id); 
+  Torque_off(id);
 
   if(id == idX && X_REVERSE)
     homePosition *= -1;
@@ -411,43 +507,7 @@ void OffsetAxe(uint8_t id, int offset){
     homePosition *= -1;
   
   Write(id, homePosition, HOMING_OFFSET);
-}
-
-int MovingTick(uint8_t id, int32_t value){
-  int32_t CurrentPosition = Read(id, PRESENT_POSITION);
-  bool Forward = value > CurrentPosition;
-  
-  if((Forward && (CurrentPosition < MAXTICK)) || (!Forward && (CurrentPosition > MINTICK)))
-  {
-    Torque_on(id);
-    Write(id, value, GOAL_POSITION); 
-  }
-  else
-  {
-    Torque_off(id);
-    return -1;
-  }
-  
-  if(Forward){
-    while(CurrentPosition < value-1  && !isEmegencyState){
-      CurrentPosition = Read(id, PRESENT_POSITION);
-      if(CurrentPosition >= MAXTICK && !homing){
-        Torque_off(id);
-        return -1;
-      }
-    }
-  }
-  else {
-    while(CurrentPosition > value+1 && !isEmegencyState){
-      CurrentPosition = Read(id, PRESENT_POSITION);
-      if(CurrentPosition <= MINTICK && !homing){
-        Torque_off(id);
-        return -1;
-      }
-    }
-  }
-
-  return 1;
+  Torque_on(id);
 }
 
 void LimiteSwitch(){
@@ -459,10 +519,11 @@ void LimiteSwitch(){
 
 void setEmergency()
 {
+  isMoving = false;
   TorqueOffAll();
-  Led(idX, !digitalRead(xSwitchPin));
-  Led(idY, !digitalRead(ySwitchPin)); 
-  Led(idZ, !digitalRead(zSwitchPin));
+  Led(idX, digitalRead(xSwitchPin));
+  Led(idY, digitalRead(ySwitchPin)); 
+  Led(idZ, digitalRead(zSwitchPin));
 }
 
 

@@ -52,6 +52,8 @@ def sendAllLines(lines, timeoutCom):
 	for line in lines:
 		if not line == '\n':
 			sendWithAck(line, timeoutCom)
+			if line == 'G28':
+				sleep(1)
 
 def sendWithAck(gcodeCommand, timeoutCom):
 	global serial
