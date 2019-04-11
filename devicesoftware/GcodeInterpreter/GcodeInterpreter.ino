@@ -1,12 +1,56 @@
 /*******************************************************************************
-Titre : OpenCR
-Date : 6 février 2019
-Auteur : Maxime Desmarais-Laporte
+Title : OpenCR
+Date : April 10th 2019
+Authors : Maxime Desmarais-Laporte and Marc-Antoine Lafreniere
+
 Descritpion : 
+  GCode interpretor, use in a PCB maker device.
+
+  The device has 3 limits switches (one for every axis) use for a homing of the device
+  These switches are attach to one interrupt and to 3 digital pins.
+  The interrupt was noizy so a filter is apply to the interrupt
+
+
+Interrupt filter :
+  To filter the noize on the interrupt we use the digital pin connected to the NC of the switch
+  The filter simply looks if the digital pin is LOW for *debounceTimeFalling* time
+  If it stays LOW for the whole *debounceTimeFalling* then a flag is set to true
+  If it stays HIGH for the whole *debounceTimeRising* then a flag is set to false
+
+GCode status :
+  G0 Xx Yy Zz       Done
+  G28               Done
+  G90               Inactive
+  G91               Not implemeted
+  M18               Done
+  M112              Done
+
+Commincations :
+  When a command is recived, "2" is printed to the Serial port
+  When the command is done executing, "1" is printed to the Serial port
+
+  If the command can't complete, "-1" is printed to the Serial port
+  If the device is in eStop mode, "-2" is printed to the Serial port on a commmand request
+
+
+Electrical :
+  The 3 homing switches are connected the same way :
+    NC to a digital pin
+    NO to the interrupt
+    COM to the ground
+  Hence every digital and interrupt pin MUST be in INPUT_PULLUP
+
+
+TODO :
+  Connect 2 switches on the other end of the X and Y axis as a fail-safe and add a filter if needed
+  Change some variable usage : at the moment everything works only if motors' ids are +1 between each (ex: x=9, y=10, z=11)
 
 Specifications :
-Baud for motors : 57600 b/s
-Adress for motors : 11 and 12 and 13
+  Baud for motors : 57600 b/s
+
+Dynamixel and OpenCR documentation :
+  http://emanual.robotis.com/docs/en/dxl/x/xm430-w350/
+  http://emanual.robotis.com/docs/en/parts/controller/opencr10/
 *******************************************************************************/
 #include <DynamixelWorkbench.h>
 #include "functions.h"
@@ -16,33 +60,30 @@ Adress for motors : 11 and 12 and 13
   #define DEVICE_NAME "3"
 #elif defined(__OPENCR__)
   #define DEVICE_NAME ""
-#endif   
+#endif
 
 #define STRING_BUF_NUM 64
 #define MINTICK 0
 #define MAXTICK 1048575
-const int ACCEPTABLE_RANGE[3] = { 2, 2, 3 };
-
-// 0 = not reverse, 1 = reverse
-uint8_t X_REVERSE = 0;
-uint8_t Y_REVERSE = 1;
-uint8_t Z_REVERSE = 0;
+const int ACCEPTABLE_RANGE[3] = { 2, 2, 4 };
 
 const String HOMING_OFFSET = "Homing_Offset";
 const String OPERATING_MODE = "Operating_Mode";
 const String PRESENT_POSITION = "Present_Position";
 const String GOAL_POSITION = "Goal_Position";
 
-String cmd[STRING_BUF_NUM];
+// 0 = not reverse, 1 = reverse
+uint8_t X_REVERSE = 0;
+uint8_t Y_REVERSE = 1;
+uint8_t Z_REVERSE = 0;
 
+// Dynamixel variables
 DynamixelWorkbench dxl_wb;
+String cmd[STRING_BUF_NUM];
 uint8_t get_id[16];
 uint8_t scan_cnt = 0;
 uint8_t ping_cnt = 0;
-
 const char *NULL_POINTER = NULL;
-
-bool isEmegencyState = false;
 
 // Motors Propertys :
 uint8_t idX = 11;
@@ -69,8 +110,8 @@ bool homingY = false;
 bool homingZ = false;
 int homingState = 0;
 
-const int homeOffsetX = /*28*/50*tickFromMm;
-const int homeOffsetY = /*19.5*/50*tickFromMm;
+const int homeOffsetX = 28*tickFromMm;
+const int homeOffsetY = 19.5*tickFromMm;
 const int homeOffsetZ = 2.5*tickFromMm;
 
 // Debounce timer variables
@@ -91,6 +132,7 @@ bool isYSwitchPress = false;
 bool isZSwitchPress = false;
 
 // eStop
+bool isEmegencyState = false;
 bool ledX = false;
 bool ledY = false;
 bool ledZ = false;
@@ -105,7 +147,6 @@ int32_t currentPosition = 0;
 int32_t movingSpeed[] = { 75, 75 };
 MovingCommand commands[3];
 
-// Initialisation :
 void setup() 
 {
   // Initialisation des pins :
@@ -152,7 +193,6 @@ void setup()
   resetMovingVariables();
 }
 
-// Main Program
 void loop() 
 {
   if(isFalling)
@@ -165,6 +205,7 @@ void loop()
         isFalling = false;
         isXSwitchPress = true;
 
+        // Insert what to do if the button is press (executed on change)
         if(homingX)
         {
           homingX = false;
@@ -201,6 +242,7 @@ void loop()
         isFalling = false;
         isYSwitchPress = true;
 
+        // Insert what to do if the button is press (executed on change)
         if(homingY)
         {
           homingY = false;
@@ -237,6 +279,7 @@ void loop()
         isFalling = false;
         isZSwitchPress = true;
         
+        // Insert what to do if the button is press (executed on change)
         if(homingZ)
         {
           homingZ = false;
@@ -278,6 +321,7 @@ void loop()
         lastTimeXRising = millis();
         isRising = false;
         isXSwitchPress = false;
+        // Insert what to do if the button is release (executed on change)
       }
     }
     else
@@ -290,6 +334,7 @@ void loop()
         lastTimeYRising = millis();
         isRising = false;
         isYSwitchPress = false;
+        // Insert what to do if the button is release (executed on change)
       }
     }
     else
@@ -302,6 +347,7 @@ void loop()
         lastTimeZRising = millis();
         isRising = false;
         isZSwitchPress = false;
+        // Insert what to do if the button is release (executed on change)
       }
     }
     else
@@ -446,17 +492,6 @@ void loop()
 
           Serial.println("1");
       }
-      else if(words[0] == "M1")
-      {
-        TorqueOffAll();
-        
-        Write(idX, -Read(idX, PRESENT_POSITION), HOMING_OFFSET);
-        Write(idY, -Read(idY, PRESENT_POSITION), HOMING_OFFSET);
-        Write(idZ, -Read(idZ, PRESENT_POSITION), HOMING_OFFSET);
-        
-        TorqueOnAll();
-        Serial.println("1");
-      }
       else if(words[0] == "G90")
       {
         Serial.println("1");
@@ -549,7 +584,6 @@ void setEmergency()
 void changeMode(uint8_t id)
 {
   Write(id, 4, OPERATING_MODE);
-  //Write(id, movingSpeed[id-idX], "Profile_Velocity");
 }
 
 
