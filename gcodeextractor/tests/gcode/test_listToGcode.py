@@ -52,10 +52,10 @@ class TestListToGCode(TestCase):
 
 def getExpected(coords, ySize, xSize):
 	header = ['G28', 'G90\n']
-	footer = ['\nG0 Z0', 'G28', 'M18']
+	footer = ['\nG0 Z0', 'G0 X0 Y0', 'M18']
 	
 	content = ['G0 X' + str(round(xSize * coords[0].getX(), 2)) + ' Y' + str(round(ySize * coords[0].getY(), 2)),
-	           'G0 Z3',
+	           'G0 Z10.5',
 	           ]
 	
 	for index, coord in enumerate(coords):
@@ -63,7 +63,7 @@ def getExpected(coords, ySize, xSize):
 			if coord.getX() != -1 and coord.getY() != -1:
 				content.append('G0 X' + str(xSize * coord.getX()) + ' Y' + str(ySize * coord.getY()))
 				if coords[index - 1].getX() == -1 and coords[index - 1].getX() == -1:
-					content.append('G0 Z3')
+					content.append('G0 Z10.5')
 			else:
 				content.append('G0 Z0')
 	
